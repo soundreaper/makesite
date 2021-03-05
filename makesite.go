@@ -55,20 +55,45 @@ func renderTemplateFromPage(templateFilePath string, page Page) {
 	fmt.Println("Generate following file in local directory: ", page.HTMLPagePath)
 }
 
+func findTextFiles(directory string) {
+	extension := "txt"
+
+	files, err := ioutil.ReadDir(*&directory)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range files {
+		for i := range file.Name() {
+			if file.Name()[i] == '.' {
+				s := strings.Split(file.Name(), ".")[1]
+
+				if s == extension {
+					newPage := createPageFromTextFile(file.Name())
+					renderTemplateFromPage("template.tmpl", newPage)
+				}
+			}
+		}
+	}
+}
+
 func main() {
 	// Adds a console flag `--file=` to reference a particular text file
 	var textFilePath string
 	flag.StringVar(&textFilePath, "file", "", "path to a text file")
 	flag.Parse()
 
-	// Checks to see if `--file=` flag is empty
-	if textFilePath == "" {
-		panic("Missing the --file flag! Please supply one.")
-	}
+	// Adds a console flag `--dir=` to reference a directory
+	var directoryFilePath string
+	flag.StringVar(&directoryFilePath, "directory", ".", "directory containing text files")
+	flag.Parse()
 
 	// Read in specified text file and instantiate Page with it's information
-	newPage := createPageFromTextFile(textFilePath)
+	// newPage := createPageFromTextFile(textFilePath)
 
 	// Use the instantiated Page to generate a new HTML page based on the provided template
-	renderTemplateFromPage("template.tmpl", newPage)
+	// renderTemplateFromPage("template.tmpl", newPage)
+
+	// Use the directory from the console flag to find text files
+	findTextFiles(directoryFilePath)
 }
